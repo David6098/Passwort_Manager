@@ -3,13 +3,10 @@ import tkinter
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox
+from cryptography.fernet import Fernet
 class Passwort_Manager:
     def __init__(self):
-        with open('passworter.pickle', 'rb') as PasswortListe:
-            try:
-                self.Passwortliste = pickle.load(PasswortListe)
-            except:
-                self.Passwortliste = []
+
         self.root = Tk()
         self.root.title('Passwort Manager')
         self.root.geometry('600x400+50+50')
@@ -19,12 +16,41 @@ class Passwort_Manager:
         PasswLoeschen = ttk.Button(self.root, text= 'Passwort löschen', command=lambda: self.ElementLoeschen())
         allepasswloeschen = ttk.Button(self.root, text='Alle Passwörter löschen', command=lambda: self.alleElementeLoeschen())
         Schliessen = ttk.Button(self.root, text='Schließen', command=lambda: self.root.quit())
+
         passwHinzu.pack(ipadx=5, ipady=5, expand=True)
         passwAus.pack(ipadx=5, ipady=5, expand=True)
         allePasswaus.pack(ipadx=5, ipady=5, expand=True)
         PasswLoeschen.pack(ipadx=5, ipady=5, expand=True)
         allepasswloeschen.pack(ipadx=5, ipady=5, expand=True)
         Schliessen.pack(ipadx=5, ipady=5, expand=True)
+
+
+        try:
+            with open('filekey.key', 'rb') as filekey:
+                key = filekey.read()
+            # using the key
+            fernet = Fernet(key)
+
+            # opening the encrypted file
+            with open('passworter.pickle', 'rb') as enc_file:
+                encrypted = enc_file.read()
+
+            # decrypting the file
+            decrypted = fernet.decrypt(encrypted)
+
+            # opening the file in write mode and
+            # writing the decrypted data
+            with open('passworter.pickle', 'wb') as dec_file:
+                dec_file.write(decrypted)
+            with open('passworter.pickle', 'rb') as PasswortListe:
+                self.Passwortliste = pickle.load(PasswortListe)
+        except:
+            self.Passwortliste = []
+            key = Fernet.generate_key()
+
+            # string the key in a file
+            with open('filekey.key', 'wb') as filekey:
+                filekey.write(key)
         self.root.mainloop()
 
 
@@ -183,3 +209,19 @@ class Passwort_Manager:
     def Aenderungen_Speichern(self):
         with open('passworter.pickle', 'wb') as PasswortListe:
             pickle.dump(self.Passwortliste, PasswortListe)
+        with open('filekey.key', 'rb') as filekey:
+            key = filekey.read()
+
+            # using the generated key
+        fernet = Fernet(key)
+        # opening the original file to encrypt
+        with open('passworter.pickle', 'rb') as file:
+            original = file.read()
+
+        # encrypting the file
+        encrypted = fernet.encrypt(original)
+
+        # opening the file in write mode and
+        # writing the encrypted data
+        with open('passworter.pickle', 'wb') as encrypted_file:
+            encrypted_file.write(encrypted)
