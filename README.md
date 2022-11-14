@@ -3,5 +3,4 @@ My plan is to create a password manager, which encrypts passwords locally and au
 
 What's missing:
 	- encryption
-	- a lot of bottons
 	- an appealing appearence
